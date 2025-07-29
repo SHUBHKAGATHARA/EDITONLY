@@ -1,4 +1,4 @@
-﻿@model List<IceCreame_MVC.Models.BrandModel>
+@model List<IceCreame_MVC.Models.BrandModel>
 
 @{
     ViewData["Title"] = "Brands";
@@ -26,25 +26,51 @@
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
 
 <style>
-    body {
-        background-color: #f8f9fa;
-    }
-
     .brand-header {
-        border-bottom: 2px solid #0d6efd;
+        border-bottom: 2px solid rgba(255, 255, 255, 0.3);
         padding-bottom: 1rem;
+        color: white;
     }
 
     .brand-card {
-        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-        border-top-width: 4px;
-        border-top-style: solid;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 20px;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        overflow: hidden;
+        position: relative;
+        box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
     }
 
-        .brand-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
-        }
+    .brand-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        z-index: 1;
+    }
+
+    .brand-card:hover::before {
+        opacity: 1;
+    }
+
+    .brand-card:hover {
+        transform: translateY(-10px) scale(1.02);
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+        border-color: rgba(255, 255, 255, 0.4);
+    }
+
+    .card-body {
+        position: relative;
+        z-index: 2;
+        color: white;
+    }
 
     .brand-avatar {
         width: 50px;
@@ -57,15 +83,23 @@
         font-size: 1.5rem;
         font-weight: 500;
         flex-shrink: 0;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
     }
 
     .controls-card {
-        background-color: #ffffff;
-        border: 1px solid #dee2e6;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 20px;
+        box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
     }
 
     .search-wrapper .form-control {
         padding-left: 2.5rem;
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: white;
+        backdrop-filter: blur(10px);
     }
 
     .search-wrapper .search-icon {
@@ -76,18 +110,81 @@
         color: #6c757d;
     }
 
+    .form-control::placeholder {
+        color: rgba(255, 255, 255, 0.7);
+    }
+
+    .form-control:focus {
+        background: rgba(255, 255, 255, 0.2);
+        border-color: rgba(255, 255, 255, 0.5);
+        box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+        color: white;
+    }
+
+    .form-select {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: white;
+        backdrop-filter: blur(10px);
+    }
+
     .empty-state {
         text-align: center;
         padding: 4rem 1rem;
-        background-color: #ffffff;
-        border-radius: 0.5rem;
-        border: 2px dashed #ced4da;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 20px;
+        border: 2px dashed rgba(255, 255, 255, 0.2);
+        color: white;
+        backdrop-filter: blur(20px);
     }
 
-        .empty-state i {
-            font-size: 3.5rem;
-            color: #6c757d;
-        }
+    .empty-state i {
+        font-size: 3.5rem;
+        color: rgba(255, 255, 255, 0.7);
+    }
+
+    .btn {
+        border-radius: 15px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+    }
+
+    .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    }
+
+    .btn-outline-primary {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: white;
+    }
+
+    .btn-outline-primary:hover {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+    }
+
+    .btn-success {
+        background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        border: none;
+        color: white;
+    }
+
+    .card-title {
+        color: white;
+        font-weight: 600;
+    }
+
+    .card-text {
+        color: rgba(255, 255, 255, 0.8);
+    }
+
+    .badge {
+        backdrop-filter: blur(10px);
+        border-radius: 15px;
+    }
 
     /* List View Styles */
     #brandCards.list-view .brand-card-wrapper {
@@ -122,16 +219,37 @@
 
     .copy-btn {
         cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .copy-btn:hover {
+        transform: scale(1.2);
+    }
+
+    /* Animation Classes */
+    .fade-in-up {
+        opacity: 0;
+        transform: translateY(30px);
+        transition: all 0.6s ease;
+    }
+
+    .fade-in-up.visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    @keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
     }
 </style>
 
 <div class="container py-4 py-md-5">
-
-    <div class="brand-header d-flex justify-content-between align-items-center mb-4">
+    <div class="brand-header d-flex justify-content-between align-items-center mb-4 fade-in-up">
         <h1 class="mb-0 h2 display-6"><i class="bi bi-stars text-primary me-2"></i>Ice Cream Brands ✨</h1>
     </div>
 
-    <div class="card controls-card p-3 mb-4">
+    <div class="controls-card p-3 mb-4 fade-in-up">
         <div class="d-flex flex-column flex-lg-row gap-2 align-items-center">
             <div class="search-wrapper flex-grow-1 w-100">
                 <i class="bi bi-search search-icon"></i>
@@ -156,7 +274,7 @@
 
     @if (Model != null && Model.Any())
     {
-        <div class="row" id="brandCards">
+        <div class="row fade-in-up" id="brandCards">
             @foreach (var brand in Model)
             {
                 var avatarColor = GetColorFromString(brand.BrandName);
@@ -164,7 +282,7 @@
                 var wordCount = !string.IsNullOrWhiteSpace(brand.Description) ? brand.Description.Split(new char[] { ' ', '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries).Length : 0;
 
                 <div class="col brand-card-wrapper" data-brand-name="@brand.BrandName">
-                    <div class="card h-100 shadow-sm brand-card" style="border-top-color: @avatarColor;">
+                    <div class="card h-100 shadow-sm brand-card" style="animation: float 6s ease-in-out infinite; animation-delay: @((brand.BrandId % 4) * 0.5)s;">
                         <div class="card-body d-flex flex-column">
                             <div class="d-flex align-items-center brand-info">
                                 <div class="brand-avatar me-3" style="background-color: @avatarColor;">
@@ -174,7 +292,7 @@
                                     <h5 class="card-title mb-0">@brand.BrandName</h5>
 
                                     <div>
-                                        <span class="badge bg-secondary-subtle text-secondary-emphasis fw-medium">
+                                        <span class="badge bg-light text-dark fw-medium">
                                             ID: @brand.BrandId
                                         </span>
                                         <i class="bi bi-clipboard-check-fill copy-btn ms-1 text-primary"
@@ -188,10 +306,10 @@
 
                             <div class="mb-3 flex-grow-1">
                                 <div class="d-flex justify-content-between align-items-center mb-1">
-                                    <h6 class="mb-0 small text-uppercase text-muted">About</h6>
+                                    <h6 class="mb-0 small text-uppercase" style="color: rgba(255, 255, 255, 0.7);">About</h6>
                                     <span class="badge bg-light text-dark">@wordCount words</span>
                                 </div>
-                                <p class="card-text small text-secondary">
+                                <p class="card-text small">
                                     @brand.Description
                                 </p>
                             </div>
@@ -218,25 +336,26 @@
             }
         </div>
 
-        <div class="text-center" id="noResults" style="display:none;">
+        <div class="text-center fade-in-up" id="noResults" style="display:none;">
             <div class="empty-state mt-4"><i class="bi bi-search-heart"></i><h4 class="mt-3">No Matches Found</h4><p class="text-muted">Try another keyword!</p></div>
         </div>
     }
     else
     {
-        <div class="empty-state">
+        <div class="empty-state fade-in-up">
             <i class="bi bi-emoji-dizzy"></i><h4 class="mt-3">No Brands Yet!</h4><p class="text-muted">Let's add the first brand.</p>
             <a href="@Url.Action("AddEdit", "Brand")" class="btn btn-primary mt-2"><i class="bi bi-plus-circle me-1"></i> Add Your First Brand</a>
         </div>
     }
 </div>
 
+<!-- Modal with Glass Morphism -->
 <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
     <div class="modal-dialog">
-        <div class="modal-content">
+        <div class="modal-content" style="background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 20px; color: white;">
             <div class="modal-header"><h5 class="modal-title" id="deleteModalLabel">Confirm Deletion</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>
             <div class="modal-body">Are you sure you want to delete the brand: <strong id="brandNameToDelete"></strong>?<p class="text-danger mt-2"><small>This action cannot be undone.</small></p></div>
-            <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button><a id="confirmDeleteButton" href="#" class="btn btn-danger">Delete</a></div>
+            <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button><a id="confirmDeleteButton" href="#" class="btn text-white" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">Delete</a></div>
         </div>
     </div>
 </div>
@@ -245,6 +364,22 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         document.addEventListener("DOMContentLoaded", function () {
+            // Scroll animations
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                    }
+                });
+            }, observerOptions);
+
+            document.querySelectorAll('.fade-in-up').forEach(el => observer.observe(el));
+
             const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"], [title]');
             const tooltipList = [...tooltipTriggerList].map(el => new bootstrap.Tooltip(el));
 
