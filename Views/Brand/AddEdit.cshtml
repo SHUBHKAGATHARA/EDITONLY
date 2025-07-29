@@ -1,0 +1,43 @@
+﻿@model IceCreame_MVC.Models.BrandModel
+@{
+    ViewData["Title"] = Model.BrandId == 0 ? "Add Brand" : "Edit Brand";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h2 class="mb-0">@ViewData["Title"]</h2>
+            </div>
+            <div class="card-body">
+                <form asp-action="AddEdit" method="post">
+
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                    <input type="hidden" asp-for="BrandId" />
+
+                    <div class="mb-3">
+                        <label asp-for="BrandName" class="form-label fw-bold"></label>
+                        <input asp-for="BrandName" class="form-control" placeholder="e.g., Ben & Jerry's" />
+                        <span asp-validation-for="BrandName" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Description" class="form-label fw-bold"></label>
+                        <textarea asp-for="Description" class="form-control" rows="4" placeholder="Enter a brief description of the brand..."></textarea>
+                        <span asp-validation-for="Description" class="text-danger small"></span>
+                    </div>
+
+                    <div class="card-footer bg-transparent text-end">
+                        <a asp-action="Index" class="btn btn-secondary me-2">Cancel</a>
+                        <button type="submit" class="btn btn-primary">
+                            Save
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </div>
+</div>

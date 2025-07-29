@@ -1,0 +1,114 @@
+﻿@model IEnumerable<IceCreame_MVC.Models.CartModel>
+
+@{
+    ViewData["Title"] = "Cart";
+}
+
+<style>
+    /* Custom styles for the cart page to match the new theme */
+    .cart-management-title {
+        color: var(--text-dark);
+        font-weight: 600;
+    }
+
+    .btn-add-new {
+        background-color: var(--text-accent);
+        border-color: var(--text-accent);
+        color: #fff;
+    }
+
+        .btn-add-new:hover {
+            background-color: var(--text-accent-dark);
+            border-color: var(--text-accent-dark);
+        }
+
+    .cart-card {
+        border: none;
+        border-radius: 1rem;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        background-color: #fff;
+    }
+
+        .cart-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(44, 62, 80, 0.1);
+        }
+
+    .card-header-custom {
+        background-color: #e_a_ecf0;
+        color: var(--text-accent-dark);
+        font-weight: 600;
+        border-top-left-radius: 1rem;
+        border-top-right-radius: 1rem;
+        padding: 0.75rem 1.25rem;
+    }
+
+    .card-body p {
+        margin-bottom: 0.75rem;
+        color: var(--text-dark);
+    }
+
+        .card-body p i {
+            color: var(--text-accent);
+            margin-right: 8px;
+            width: 20px;
+        }
+
+</style>
+
+<div class="container mt-4">
+    <h2 class="mb-4 text-center cart-management-title">🛒 Cart Management</h2>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="d-flex justify-content-end mb-3">
+        <a class="btn btn-add-new" asp-action="AddEdit"><i class="bi bi-plus-lg me-1"></i> Add New Cart</a>
+    </div>
+
+    @if (Model.Any())
+    {
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+            @foreach (var cart in Model)
+            {
+                <div class="col">
+                    <div class="card h-100 cart-card shadow-sm">
+                        <div class="card-header-custom">
+                            <i class="bi bi-receipt-cutoff me-2"></i> Cart ID: @cart.CartId
+                        </div>
+                        <div class="card-body p-4">
+                            <p><i class="bi bi-person-fill"></i><strong>User:</strong> @cart.UserName</p>
+                            <p><i class="bi bi-box-seam-fill"></i><strong>Product:</strong> @cart.ProductName</p>
+                            <p><i class="bi bi-funnel-fill"></i><strong>Quantity:</strong> @cart.Quantity</p>
+                            <p><i class="bi bi-calendar-event-fill"></i><strong>Created:</strong> @(cart.CreatedAt?.ToString("dd MMM yyyy") ?? "N/A")</p>
+                        </div>
+                        <div class="card-footer d-flex flex-wrap justify-content-center gap-2 pt-3 border-0 bg-transparent">
+                            <a class="btn btn-sm btn-success" asp-controller="Order" asp-action="OrderFromCart" asp-route-id="@cart.CartId" onclick="return confirm('Proceed to place this order?')"><i class="bi bi-bag-check-fill me-1"></i> Order Now</a>
+                            <a class="btn btn-sm btn-info text-white" asp-controller="Wishlist" asp-action="AddFromCart" asp-route-id="@cart.CartId"><i class="bi bi-heart-fill me-1"></i> Wishlist</a>
+
+                            <a class="btn btn-sm btn-outline-secondary" asp-action="AddEdit" asp-route-id="@cart.CartId">✏️ Edit</a>
+                            <a class="btn btn-sm btn-outline-danger" asp-action="Delete" asp-route-id="@cart.CartId" onclick="return confirm('Are you sure you want to delete this cart?')">🗑️ Delete</a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-info text-center">No cart items available.</div>
+    }
+</div>

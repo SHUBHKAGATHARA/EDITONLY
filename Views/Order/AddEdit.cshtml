@@ -1,0 +1,77 @@
+﻿@model IceCreame_MVC.Models.OrderModel
+@using IceCreame_MVC.Models
+@{
+    ViewData["Title"] = Model.OrderId == 0 ? "Add Order" : "Edit Order";
+    var users = ViewBag.Users as List<UserModel>;
+}
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm rounded">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">@ViewData["Title"]</h4>
+                </div>
+                <div class="card-body">
+                    <form asp-action="AddEdit" method="post">
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
+                        <input type="hidden" asp-for="OrderId" />
+
+                        <!-- Order Name -->
+                        <div class="mb-3">
+                            <label asp-for="OrderName" class="form-label"></label>
+                            <input asp-for="OrderName" class="form-control" placeholder="Enter order name" />
+                            <span asp-validation-for="OrderName" class="text-danger"></span>
+                        </div>
+
+                        <!-- User Dropdown -->
+                        <div class="mb-3">
+                            <label asp-for="UserId" class="form-label">User</label>
+                            <select asp-for="UserId" class="form-select">
+                                <option value="">-- Select User --</option>
+                                @foreach (var user in users ?? new List<UserModel>())  
+                                {  
+                                   <option value="@user.UserId" selected="@(Model.UserId == user.UserId ? "selected" : null)">  
+                                       @user.UserName  
+                                   </option>  
+                                }
+                            </select>
+                            <span asp-validation-for="UserId" class="text-danger"></span>
+                        </div>
+
+                        <!-- Order Date -->
+                        <div class="mb-3">
+                            <label asp-for="OrderDate" class="form-label"></label>
+                            <input asp-for="OrderDate" class="form-control" type="date" />
+                            <span asp-validation-for="OrderDate" class="text-danger"></span>
+                        </div>
+
+                        <!-- Total Amount -->
+                        <div class="mb-3">
+                            <label asp-for="TotalAmount" class="form-label"></label>
+                            <input asp-for="TotalAmount" class="form-control" placeholder="Enter total amount" />
+                            <span asp-validation-for="TotalAmount" class="text-danger"></span>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="d-flex justify-content-between mt-4">
+                            <button type="submit" class="btn btn-success">
+                                <i class="bi bi-check-circle"></i> Save
+                            </button>
+                            <a asp-action="Index" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left-circle"></i> Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+}

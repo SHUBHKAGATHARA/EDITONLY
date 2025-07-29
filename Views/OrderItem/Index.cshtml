@@ -1,0 +1,331 @@
+﻿@model List<IceCreame_MVC.Models.OrderItemModel>
+
+@{
+    ViewData["Title"] = "Order Items";
+    // Initial totals are still calculated for the initial page load.
+    var totalQuantity = Model?.Sum(item => item.Quantity) ?? 0;
+    var grandTotal = Model?.Sum(item => item.Quantity * item.UnitPrice) ?? 0;
+}
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
+
+<style>
+    :root {
+        --bs-primary-rgb: 13, 110, 253; /* Using Bootstrap's default blue for consistency */
+    }
+
+    .view-container {
+        display: none;
+    }
+
+        .view-container.active {
+            display: block;
+        }
+
+    .item-card {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        border: 1px solid #dee2e6;
+    }
+
+        .item-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+        }
+
+        .item-card .card-img-top {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+        }
+
+    /* Responsive Table Styles */
+    .table-responsive-stack {
+        display: block;
+        width: 100%;
+    }
+    (max-width: 768px) {
+        .table-responsive-stack thead
+
+    {
+        display: none;
+    }
+
+    .table-responsive-stack tbody, .table-responsive-stack tr, .table-responsive-stack td {
+        display: block;
+        width: 100%;
+    }
+
+    .table-responsive-stack tr {
+        margin-bottom: 1rem;
+        border: 1px solid #dee2e6;
+        border-radius: .375rem;
+        padding: .5rem;
+    }
+
+    .table-responsive-stack td {
+        padding-left: 50%;
+        position: relative;
+        text-align: right;
+        border: none;
+    }
+
+        .table-responsive-stack td::before {
+            content: attr(data-label);
+            position: absolute;
+            left: .75rem;
+            width: 45%;
+            padding-right: .75rem;
+            text-align: left;
+            font-weight: 500;
+            color: #212529;
+        }
+
+    .table-responsive-stack tfoot td {
+        text-align: left;
+    }
+
+    }
+</style>
+
+<div class="card shadow-sm mt-4">
+    <div class="card-header bg-light">
+        <div class="d-flex flex-column flex-lg-row align-items-center gap-3">
+            <h2 class="mb-0 h4 me-lg-3 text-nowrap"><i class="bi bi-cart-check-fill me-2 text-primary"></i> @ViewData["Title"]</h2>
+            <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-search"></i></span>
+                <input type="text" id="searchInput" class="form-control" placeholder="Search items by name...">
+            </div>
+            <div class="d-flex align-items-center gap-2 w-100 w-lg-auto">
+                <select id="sortControl" class="form-select">
+                    <option value="name-asc">Sort A-Z</option>
+                    <option value="name-desc">Sort Z-A</option>
+                    <option value="price-desc">Price: High to Low</option>
+                    <option value="price-asc">Price: Low to High</option>
+                </select>
+                <div id="view-toggle" class="btn-group" role="group">
+                    <button type="button" class="btn btn-outline-primary" data-view="card" title="Card View"><i class="bi bi-grid-3x3-gap-fill"></i></button>
+                    <button type="button" class="btn btn-outline-primary" data-view="table" title="Table View"><i class="bi bi-table"></i></button>
+                </div>
+                <a asp-action="AddEdit" class="btn btn-primary text-nowrap">
+                    <i class="bi bi-plus-lg me-1"></i> Add
+                </a>
+            </div>
+        </div>
+    </div>
+
+    @if (Model != null && Model.Any())
+    {
+        <div id="card-view-container" class="view-container card-body">
+            <div class="row">
+                @foreach (var item in Model)
+                {
+                    <div class="col-12 col-md-6 col-lg-4 mb-4 item-col" data-name="@item.OrderItemName" data-price="@item.UnitPrice">
+                        <div class="card h-100 shadow-sm item-card">
+                            <img src="https://picsum.photos/400/300?random=@item.OrderItemId" class="card-img-top" alt="@item.OrderItemName">
+                            <div class="card-body d-flex flex-column">
+                                <h5 class="card-title">@item.OrderItemName</h5>
+                                <p class="card-text text-muted small">ID: @item.OrderItemId</p>
+                                <ul class="list-group list-group-flush mt-auto">
+                                    <li class="list-group-item d-flex justify-content-between align-items-center px-0">Quantity <span class="badge bg-primary rounded-pill">@item.Quantity</span></li>
+                                    <li class="list-group-item d-flex justify-content-between align-items-center px-0">Unit Price <span>@item.UnitPrice?.ToString("C")</span></li>
+                                    <li class="list-group-item d-flex justify-content-between align-items-center fw-bold px-0">Subtotal <span class="fs-6">@((item.Quantity * item.UnitPrice)?.ToString("C"))</span></li>
+                                </ul>
+                            </div>
+                            <div class="card-footer text-center">
+                                <div class="btn-group" role="group">
+                                    <a asp-action="AddEdit" asp-route-id="@item.OrderItemId" class="btn btn-sm btn-outline-secondary" title="Edit"><i class="bi bi-pencil-fill"></i> Edit</a>
+                                    <button type="button" class="btn btn-sm btn-outline-danger delete-btn" data-bs-toggle="modal" data-bs-target="#deleteConfirmationModal" data-item-id="@item.OrderItemId" data-item-name="@item.OrderItemName" title="Delete"><i class="bi bi-trash-fill"></i> Delete</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div id="table-view-container" class="view-container">
+            <div class="table-responsive">
+                <table class="table table-hover table-striped mb-0 table-responsive-stack">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Item Name</th>
+                            <th class="text-center">Quantity</th>
+                            <th class="text-end">Unit Price</th>
+                            <th class="text-end">Subtotal</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr class="align-middle item-row" data-name="@item.OrderItemName" data-price="@item.UnitPrice">
+                                <td data-label="Item">
+                                    <div class="d-flex align-items-center">
+                                        <img src="https://picsum.photos/80/80?random=@item.OrderItemId" class="rounded me-3" alt="@item.OrderItemName" width="40" height="40">
+                                        <div>
+                                            <div class="fw-bold">@item.OrderItemName</div>
+                                            <div class="text-muted small">ID: @item.OrderItemId</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td data-label="Quantity" class="text-center">@item.Quantity</td>
+                                <td data-label="Unit Price" class="text-end">@item.UnitPrice?.ToString("C")</td>
+                                <td data-label="Subtotal" class="text-end fw-bold">@((item.Quantity * item.UnitPrice)?.ToString("C"))</td>
+                                <td data-label="Actions" class="text-center">
+                                    <div class="btn-group" role="group">
+                                        <a asp-action="AddEdit" asp-route-id="@item.OrderItemId" class="btn btn-sm btn-outline-secondary" title="Edit"><i class="bi bi-pencil-fill"></i></a>
+                                        <button type="button" class="btn btn-sm btn-outline-danger delete-btn" data-bs-toggle="modal" data-bs-target="#deleteConfirmationModal" data-item-id="@item.OrderItemId" data-item-name="@item.OrderItemName" title="Delete"><i class="bi bi-trash-fill"></i></button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card-footer">
+            <div class="d-flex justify-content-end align-items-center gap-4">
+                <div class="text-center">
+                    <div class="text-muted small">TOTAL QUANTITY</div>
+                    <div id="total-quantity" class="fs-5 fw-bold">@totalQuantity</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-muted small">GRAND TOTAL</div>
+                    <div id="grand-total" class="fs-5 fw-bold text-success">@grandTotal.ToString("C")</div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="card-body">
+            <div class="text-center p-5">
+                <i class="bi bi-cart-x" style="font-size: 4rem; color: #ced4da;"></i>
+                <h4 class="mt-3">No Order Items Found</h4>
+                <p class="text-muted">It looks like this order is empty. Let's add an item!</p>
+                <a asp-action="AddEdit" class="btn btn-primary mt-2"><i class="bi bi-plus-circle me-1"></i> Add the First Item</a>
+            </div>
+        </div>
+    }
+</div>
+
+<div class="modal fade" id="deleteConfirmationModal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header"><h5 class="modal-title" id="modalLabel">Confirm Deletion</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>
+            <div class="modal-body">Are you sure you want to delete <strong id="itemName"></strong>?</div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="deleteForm" asp-action="Delete" method="post" class="d-inline">
+                    <input type="hidden" name="id" id="deleteItemId" />
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // --- Elements ---
+            const searchInput = document.getElementById('searchInput');
+            const sortControl = document.getElementById('sortControl');
+            const viewToggle = document.getElementById('view-toggle');
+            const cardContainer = document.getElementById('card-view-container');
+            const tableContainer = document.getElementById('table-view-container');
+            const allItemCols = cardContainer ? Array.from(cardContainer.querySelectorAll('.item-col')) : [];
+            const allItemRows = tableContainer ? Array.from(tableContainer.querySelectorAll('.item-row')) : [];
+
+            // --- Delete Modal ---
+            const deleteModal = document.getElementById('deleteConfirmationModal');
+            if (deleteModal) {
+                deleteModal.addEventListener('show.bs.modal', function (event) {
+                    const button = event.relatedTarget;
+                    deleteModal.querySelector('#itemName').textContent = button.dataset.itemName;
+                    deleteModal.querySelector('#deleteItemId').value = button.dataset.itemId;
+                });
+            }
+
+            // --- View Toggling ---
+            function setView(view) {
+                if (view === 'table') {
+                    cardContainer.classList.remove('active');
+                    tableContainer.classList.add('active');
+                    viewToggle.querySelector('[data-view="table"]').classList.add('active');
+                    viewToggle.querySelector('[data-view="card"]').classList.remove('active');
+                } else {
+                    tableContainer.classList.remove('active');
+                    cardContainer.classList.add('active');
+                    viewToggle.querySelector('[data-view="card"]').classList.add('active');
+                    viewToggle.querySelector('[data-view="table"]').classList.remove('active');
+                }
+                localStorage.setItem('orderItemView', view);
+            }
+            viewToggle.addEventListener('click', (e) => {
+                const button = e.target.closest('button');
+                if (button) setView(button.dataset.view);
+            });
+
+            // --- Main Update Function ---
+            function updateViews() {
+                const filter = searchInput.value.toLowerCase();
+                let visibleItemsData = [];
+
+                // 1. Filter both views
+                allItemCols.forEach((col, index) => {
+                    const row = allItemRows[index];
+                    const name = col.dataset.name.toLowerCase();
+                    const isVisible = name.includes(filter);
+                    col.style.display = isVisible ? '' : 'none';
+                    row.style.display = isVisible ? '' : 'none';
+                    if (isVisible) {
+                        visibleItemsData.push(allItemRows[index]); // Use row for data
+                    }
+                });
+
+                // 2. Recalculate Totals
+                let totalQty = 0;
+                let grandTotal = 0;
+                visibleItemsData.forEach(row => {
+                    const qty = parseInt(row.querySelector('[data-label="Quantity"]').textContent);
+                    const price = parseFloat(row.querySelector('[data-label="Unit Price"]').textContent.replace(/[^0-9.-]+/g, ""));
+                    totalQty += qty;
+                    grandTotal += qty * price;
+                });
+                document.getElementById('total-quantity').textContent = totalQty;
+                document.getElementById('grand-total').textContent = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(grandTotal);
+
+                // 3. Sort both views
+                const sortValue = sortControl.value;
+                const sortedData = [...visibleItemsData].sort((a, b) => {
+                    const nameA = a.dataset.name.toLowerCase();
+                    const nameB = b.dataset.name.toLowerCase();
+                    const priceA = parseFloat(a.dataset.price);
+                    const priceB = parseFloat(b.dataset.price);
+
+                    switch (sortValue) {
+                        case 'name-desc': return nameB.localeCompare(nameA);
+                        case 'price-asc': return priceA - priceB;
+                        case 'price-desc': return priceB - priceA;
+                        default: return nameA.localeCompare(nameB);
+                    }
+                });
+
+                // 4. Re-append sorted elements to their respective parents
+                sortedData.forEach(row => {
+                    const cardIndex = allItemRows.indexOf(row);
+                    tableContainer.querySelector('tbody').appendChild(row);
+                    cardContainer.querySelector('.row').appendChild(allItemCols[cardIndex]);
+                });
+            }
+
+            // --- Initial Setup ---
+            const savedView = localStorage.getItem('orderItemView') || 'card';
+            setView(savedView);
+            [searchInput, sortControl].forEach(el => el.addEventListener('input', updateViews));
+            updateViews(); // Initial call to sort and calculate
+        });
+    </script>
+}

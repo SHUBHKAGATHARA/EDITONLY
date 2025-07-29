@@ -1,0 +1,52 @@
+﻿@model IceCreame_MVC.Models.CategoryModel
+
+@{
+    ViewData["Title"] = Model.CategoryId == 0 ? "Add Category" : "Edit Category";
+}
+
+<div class="row justify-content-center mt-4">
+    <div class="col-md-8 col-lg-6">
+
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h2 class="mb-0">
+                    <i class="fas fa-edit me-2"></i> @ViewData["Title"]
+                </h2>
+            </div>
+
+            <form asp-action="AddEdit" method="post">
+                <div class="card-body">
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                    <input type="hidden" asp-for="CategoryId" />
+
+                    <div class="mb-3">
+                        <label asp-for="CategoryName" class="form-label fw-bold"></label>
+                        <input asp-for="CategoryName" class="form-control" placeholder="e.g., Classic Flavors, Sorbets" />
+                        <span asp-validation-for="CategoryName" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Description" class="form-label fw-bold"></label>
+                        <textarea asp-for="Description" class="form-control" rows="4" placeholder="Describe the category..."></textarea>
+                        <span asp-validation-for="Description" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <div class="card-footer bg-transparent text-end border-top-0">
+                    <a asp-action="Index" class="btn btn-secondary me-2">Cancel</a>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-save me-1"></i> Save
+                    </button>
+                </div>
+            </form>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

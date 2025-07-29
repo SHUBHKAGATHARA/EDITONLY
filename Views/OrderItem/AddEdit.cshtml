@@ -1,0 +1,83 @@
+﻿@model IceCreame_MVC.Models.OrderItemModel
+
+@{
+    ViewData["Title"] = Model.OrderItemId == 0 ? "Add Order Item" : "Edit Order Item";
+
+    // These ViewBags must be populated in your Controller action with SelectList objects.
+    // Example: ViewBag.Orders = new SelectList(context.Orders, "OrderId", "OrderNumber");
+    //          ViewBag.Products = new SelectList(context.Products, "ProductId", "ProductName");
+}
+
+<div class="row justify-content-center mt-4">
+    <div class="col-lg-8">
+
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h2 class="mb-0">
+                    <i class="fas fa-cart-plus me-2"></i> @ViewData["Title"]
+                </h2>
+            </div>
+
+            <form asp-action="AddEdit" method="post">
+                <div class="card-body">
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+                    <input type="hidden" asp-for="OrderItemId" />
+
+                    <div class="row g-3">
+
+                        <div class="col-md-12">
+                            <label asp-for="OrderItemName" class="form-label fw-bold"></label>
+                            <input asp-for="OrderItemName" class="form-control" placeholder="e.g., Double Scoop Chocolate" />
+                            <span asp-validation-for="OrderItemName" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="OrderId" class="form-label fw-bold"></label>
+                            <select asp-for="OrderId" class="form-select" asp-items="ViewBag.Orders">
+                                <option value="">-- Select Order --</option>
+                            </select>
+                            <span asp-validation-for="OrderId" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="ProductId" class="form-label fw-bold"></label>
+                            <select asp-for="ProductId" class="form-select" asp-items="ViewBag.Products">
+                                <option value="">-- Select Product --</option>
+                            </select>
+                            <span asp-validation-for="ProductId" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="Quantity" class="form-label fw-bold"></label>
+                            <input asp-for="Quantity" type="number" class="form-control" placeholder="e.g., 2" />
+                            <span asp-validation-for="Quantity" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="UnitPrice" class="form-label fw-bold"></label>
+                            <div class="input-group">
+                                <span class="input-group-text">₹</span>
+                                <input asp-for="UnitPrice" type="number" step="0.01" class="form-control" placeholder="e.g., 150.00" />
+                            </div>
+                            <span asp-validation-for="UnitPrice" class="text-danger small"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-footer bg-transparent text-end border-top-0">
+                    <a asp-action="Index" class="btn btn-secondary me-2">Cancel</a>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-save me-1"></i> Save
+                    </button>
+                </div>
+            </form>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

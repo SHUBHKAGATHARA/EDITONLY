@@ -1,0 +1,38 @@
+﻿@model IceCreame_MVC.Models.CartModel
+
+@{
+    ViewData["Title"] = "Place Order";
+}
+
+<div class="container mt-5">
+    <div class="card shadow-lg rounded">
+        <div class="card-header bg-success text-white">
+            <h4 class="mb-0">🛒 Place Order</h4>
+        </div>
+        <div class="card-body">
+            <form asp-action="OrderFromCart" method="post">
+                <input type="hidden" asp-for="CartId" />
+                <input type="hidden" asp-for="UserId" />
+                <input type="hidden" asp-for="ProductId" />
+
+                <div class="mb-3">
+                    <label class="form-label">User Name</label>
+                    <input class="form-control" value="@Model.UserName" readonly />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Product Name</label>
+                    <input class="form-control" value="@Model.ProductName" readonly />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Quantity</label>
+                    <input class="form-control" value="@Model.Quantity" readonly />
+                </div>
+
+                <button type="submit" class="btn btn-primary">Confirm Order</button>
+                <a asp-controller="Cart" asp-action="Index" class="btn btn-secondary ms-2">Cancel</a>
+            </form>
+        </div>
+    </div>
+</div>

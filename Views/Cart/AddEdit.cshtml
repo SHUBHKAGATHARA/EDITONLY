@@ -1,0 +1,54 @@
+﻿@model IceCreame_MVC.Models.CartModel  
+@{  
+   ViewData["Title"] = Model.CartId == 0 ? "Add Cart" : "Edit Cart";  
+   var users = ViewBag.Users as List<IceCreame_MVC.Models.UserModel> ?? new List<IceCreame_MVC.Models.UserModel>();  
+   var products = ViewBag.Products as List<IceCreame_MVC.Models.ProductModel> ?? new List<IceCreame_MVC.Models.ProductModel>();  
+}  
+
+<div class="container mt-5">  
+   <div class="card p-4 shadow-sm">  
+       <h3 class="text-primary mb-4">  
+           @(Model.CartId == 0 ? "➕ Add New Cart" : "✏️ Edit Cart")  
+       </h3>  
+
+       <form asp-action="AddEdit" method="post">  
+           @Html.HiddenFor(x => x.CartId)  
+
+           <div class="mb-3">  
+               <label class="form-label">👤 User</label>  
+               <select class="form-select" asp-for="UserId" required>  
+                   <option value="">-- Select User --</option>  
+                   @foreach (var user in users)  
+                   {  
+                       <option value="@user.UserId" selected="@(user.UserId == Model.UserId)">  
+                           @user.UserName  
+                       </option>  
+                   }  
+               </select>  
+           </div>  
+
+           <div class="mb-3">  
+               <label class="form-label">🍦 Product</label>  
+               <select class="form-select" asp-for="ProductId" required>  
+                   <option value="">-- Select Product --</option>  
+                   @foreach (var p in products)  
+                   {  
+                       <option value="@p.ProductId" selected="@(p.ProductId == Model.ProductId)">  
+                           @p.ProductName  
+                       </option>  
+                   }  
+               </select>  
+           </div>  
+
+           <div class="mb-3">  
+               <label class="form-label">📦 Quantity</label>  
+               <input type="number" class="form-control" asp-for="Quantity" required />  
+           </div>  
+
+           <div class="d-flex justify-content-between">  
+               <button type="submit" class="btn btn-success">💾 Save</button>  
+               <a asp-action="Index" class="btn btn-secondary">🔙 Back</a>  
+           </div>  
+       </form>  
+   </div>  
+</div>
