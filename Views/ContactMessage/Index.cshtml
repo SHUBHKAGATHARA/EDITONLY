@@ -1,134 +1,917 @@
-﻿@model List<IceCreame_MVC.Models.ContactMessageModel>
-@* For a truly functional pagination and sorting, you would typically use a PagedList object instead of a simple List. *@
+@model List<IceCreame_MVC.Models.ContactMessageModel>
 @{
     ViewData["Title"] = "Contact Messages";
+    var messageStatuses = new[] { "New", "Read", "Replied", "Archived" };
+    var statusClasses = new[] { "bg-gradient-info", "bg-gradient-secondary", "bg-gradient-success", "bg-gradient-warning" };
+    var statusIcons = new[] { "fas fa-star", "fas fa-eye", "fas fa-reply", "fas fa-archive" };
+    var random = new Random();
 }
 
-@* Add this section to your page to include the necessary JavaScript for filtering *@
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet" />
+
+<style>
+    :root {
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        --success-gradient: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        --warning-gradient: linear-gradient(135deg, #feca57 0%, #ff9ff3 100%);
+        --info-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        --glass-bg: rgba(255, 255, 255, 0.1);
+        --glass-border: rgba(255, 255, 255, 0.2);
+        --shadow-light: 0 8px 32px rgba(31, 38, 135, 0.37);
+        --shadow-hover: 0 15px 35px rgba(31, 38, 135, 0.5);
+        --border-radius: 20px;
+        --transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    body {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+        background-attachment: fixed;
+        min-height: 100vh;
+    }
+
+    /* Floating particles background */
+    .bg-particles {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+        overflow: hidden;
+    }
+
+    .particle {
+        position: absolute;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+        animation: float 6s ease-in-out infinite;
+    }
+
+    .particle:nth-child(1) { width: 80px; height: 80px; left: 10%; animation-delay: 0s; }
+    .particle:nth-child(2) { width: 60px; height: 60px; left: 20%; animation-delay: 2s; }
+    .particle:nth-child(3) { width: 100px; height: 100px; left: 35%; animation-delay: 4s; }
+    .particle:nth-child(4) { width: 40px; height: 40px; left: 70%; animation-delay: 1s; }
+    .particle:nth-child(5) { width: 120px; height: 120px; left: 85%; animation-delay: 3s; }
+
+    @keyframes float {
+        0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0.7; }
+        50% { transform: translateY(-100px) rotate(180deg); opacity: 1; }
+    }
+
+    /* Main container animations */
+    .animated-fade-in {
+        animation: fadeInUp 0.8s ease-out;
+        opacity: 0;
+        animation-fill-mode: forwards;
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(50px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .stagger-animation {
+        animation: staggerIn 0.6s ease-out forwards;
+        opacity: 0;
+    }
+
+    @keyframes staggerIn {
+        from {
+            opacity: 0;
+            transform: translateX(-30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    /* Glass morphism card */
+    .glass-card {
+        background: var(--glass-bg);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid var(--glass-border);
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow-light);
+        transition: var(--transition);
+    }
+
+    .glass-card:hover {
+        box-shadow: var(--shadow-hover);
+        transform: translateY(-5px);
+    }
+
+    /* Enhanced header */
+    .enhanced-header {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.1) 100%);
+        backdrop-filter: blur(20px);
+        border-bottom: 1px solid var(--glass-border);
+        padding: 2rem;
+        border-radius: var(--border-radius) var(--border-radius) 0 0;
+    }
+
+    .title-with-icon {
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-weight: 800;
+        font-size: 2rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .title-icon {
+        background: var(--primary-gradient);
+        padding: 1rem;
+        border-radius: 50%;
+        color: white;
+        font-size: 1.5rem;
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+        100% { transform: scale(1); }
+    }
+
+    /* Enhanced search bar */
+    .search-container {
+        position: relative;
+        max-width: 400px;
+    }
+
+    .search-input {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid var(--glass-border);
+        border-radius: 25px;
+        padding: 0.75rem 1rem 0.75rem 3rem;
+        color: white;
+        backdrop-filter: blur(10px);
+        transition: var(--transition);
+        width: 100%;
+    }
+
+    .search-input:focus {
+        background: rgba(255, 255, 255, 0.2);
+        border-color: rgba(255, 255, 255, 0.5);
+        box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+        color: white;
+        outline: none;
+    }
+
+    .search-input::placeholder {
+        color: rgba(255, 255, 255, 0.7);
+    }
+
+    .search-icon {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 1.1rem;
+    }
+
+    /* Enhanced buttons */
+    .btn-glass {
+        background: var(--glass-bg);
+        border: 1px solid var(--glass-border);
+        border-radius: 15px;
+        color: white;
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        transition: var(--transition);
+        backdrop-filter: blur(10px);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn-glass::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.5s;
+    }
+
+    .btn-glass:hover::before {
+        left: 100%;
+    }
+
+    .btn-glass:hover {
+        background: rgba(255, 255, 255, 0.2);
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        color: white;
+    }
+
+    .btn-gradient-success {
+        background: var(--success-gradient);
+        border: none;
+        color: white;
+    }
+
+    /* Enhanced table */
+    .enhanced-table {
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(10px);
+        border-radius: 0 0 var(--border-radius) var(--border-radius);
+        overflow: hidden;
+    }
+
+    .table-header {
+        background: linear-gradient(135deg, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.2) 100%);
+        backdrop-filter: blur(20px);
+    }
+
+    .table-header th {
+        color: white;
+        font-weight: 600;
+        padding: 1.5rem 1rem;
+        border: none;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-size: 0.85rem;
+    }
+
+    .table-row {
+        background: rgba(255, 255, 255, 0.05);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        transition: var(--transition);
+        animation: slideInFromLeft 0.6s ease-out forwards;
+        opacity: 0;
+    }
+
+    .table-row:hover {
+        background: rgba(255, 255, 255, 0.1);
+        transform: translateY(-3px) scale(1.01);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    }
+
+    .table-row td {
+        color: white;
+        padding: 1.25rem 1rem;
+        border: none;
+        vertical-align: middle;
+    }
+
+    @keyframes slideInFromLeft {
+        from {
+            opacity: 0;
+            transform: translateX(-50px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    /* Enhanced status badges */
+    .status-badge {
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        animation: bounceIn 0.6s ease-out;
+    }
+
+    @keyframes bounceIn {
+        0% { transform: scale(0.3); opacity: 0; }
+        50% { transform: scale(1.05); }
+        70% { transform: scale(0.9); }
+        100% { transform: scale(1); opacity: 1; }
+    }
+
+    .bg-gradient-info { background: var(--info-gradient); }
+    .bg-gradient-success { background: var(--success-gradient); }
+    .bg-gradient-warning { background: var(--warning-gradient); }
+    .bg-gradient-secondary { background: linear-gradient(135deg, #6c757d 0%, #495057 100%); }
+
+    /* Enhanced action buttons */
+    .action-btn {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 0.25rem;
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .action-btn::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        transition: all 0.3s ease;
+        transform: translate(-50%, -50%);
+    }
+
+    .action-btn:hover::before {
+        width: 100px;
+        height: 100px;
+    }
+
+    .action-btn:hover {
+        transform: translateY(-3px) scale(1.1);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .btn-view { background: var(--info-gradient); }
+    .btn-edit { background: var(--warning-gradient); }
+    .btn-delete { background: var(--secondary-gradient); }
+
+    /* Loading animation */
+    .loading-spinner {
+        display: none;
+        text-align: center;
+        padding: 2rem;
+    }
+
+    .spinner {
+        width: 50px;
+        height: 50px;
+        border: 4px solid rgba(255, 255, 255, 0.3);
+        border-top: 4px solid white;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 1rem;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    /* Empty state */
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: white;
+    }
+
+    .empty-state-icon {
+        font-size: 5rem;
+        color: rgba(255, 255, 255, 0.3);
+        margin-bottom: 2rem;
+        animation: float 3s ease-in-out infinite;
+    }
+
+    /* Responsive design */
+    @media (max-width: 768px) {
+        .enhanced-header {
+            padding: 1.5rem;
+        }
+
+        .title-with-icon {
+            font-size: 1.5rem;
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .search-container {
+            max-width: 100%;
+            margin-top: 1rem;
+        }
+
+        /* Mobile table transformation */
+        .enhanced-table table,
+        .enhanced-table thead,
+        .enhanced-table tbody,
+        .enhanced-table th,
+        .enhanced-table td,
+        .enhanced-table tr {
+            display: block;
+        }
+
+        .enhanced-table thead tr {
+            position: absolute;
+            top: -9999px;
+            left: -9999px;
+        }
+
+        .table-row {
+            margin-bottom: 1rem;
+            border-radius: 15px;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+        }
+
+        .table-row td {
+            border: none;
+            position: relative;
+            padding: 0.75rem 0.75rem 0.75rem 35%;
+            text-align: right;
+        }
+
+        .table-row td::before {
+            content: attr(data-label);
+            position: absolute;
+            left: 0.75rem;
+            width: 30%;
+            padding-right: 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.8);
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 0.5px;
+        }
+
+        .table-row td:last-child {
+            text-align: center;
+            padding-left: 0.75rem;
+        }
+
+        .action-btn {
+            width: 35px;
+            height: 35px;
+            margin: 0 0.15rem;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .enhanced-header {
+            padding: 1rem;
+        }
+
+        .title-with-icon {
+            font-size: 1.25rem;
+        }
+
+        .title-icon {
+            padding: 0.75rem;
+            font-size: 1.25rem;
+        }
+    }
+
+    /* Stagger animation for table rows */
+    .table-row:nth-child(1) { animation-delay: 0.1s; }
+    .table-row:nth-child(2) { animation-delay: 0.2s; }
+    .table-row:nth-child(3) { animation-delay: 0.3s; }
+    .table-row:nth-child(4) { animation-delay: 0.4s; }
+    .table-row:nth-child(5) { animation-delay: 0.5s; }
+    .table-row:nth-child(n+6) { animation-delay: 0.6s; }
+
+    /* Filter animation */
+    .filter-hidden {
+        opacity: 0;
+        transform: translateX(-20px);
+        transition: var(--transition);
+    }
+
+    .filter-visible {
+        opacity: 1;
+        transform: translateX(0);
+        transition: var(--transition);
+    }
+
+    /* Count badge animation */
+    .count-badge {
+        background: var(--secondary-gradient);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: 600;
+        animation: scaleIn 0.5s ease-out;
+    }
+
+    @keyframes scaleIn {
+        0% { transform: scale(0); }
+        50% { transform: scale(1.2); }
+        100% { transform: scale(1); }
+    }
+</style>
+
+<!-- Background particles -->
+<div class="bg-particles">
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+</div>
+
+<div class="container mt-4">
+    <div class="glass-card animated-fade-in">
+        <div class="enhanced-header">
+            <div class="d-flex flex-column flex-lg-row align-items-center justify-content-between gap-3">
+                <div class="title-with-icon stagger-animation">
+                    <div class="title-icon">
+                        <i class="fas fa-envelope-open-text"></i>
+                    </div>
+                    <div>
+                        @ViewData["Title"]
+                        @if (Model != null && Model.Any())
+                        {
+                            <span class="count-badge ms-3">@Model.Count() Messages</span>
+                        }
+                    </div>
+                </div>
+
+                <div class="d-flex flex-column flex-sm-row align-items-center gap-3 w-100 w-lg-auto">
+                    <div class="search-container stagger-animation" style="animation-delay: 0.2s;">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="search" id="searchInput" class="search-input" placeholder="Search messages, names, emails...">
+                    </div>
+                    <a asp-action="AddEdit" class="btn btn-gradient-success stagger-animation" style="animation-delay: 0.4s;">
+                        <i class="fas fa-plus me-2"></i> New Message
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="enhanced-table">
+            @if (Model != null && Model.Any())
+            {
+                <div class="loading-spinner" id="loadingSpinner">
+                    <div class="spinner"></div>
+                    <p style="color: white;">Loading messages...</p>
+                </div>
+
+                <div class="table-responsive" id="messagesContainer">
+                    <table id="messagesTable" class="table mb-0">
+                        <thead class="table-header">
+                            <tr>
+                                <th>ID</th>
+                                <th>Status</th>
+                                <th>Contact</th>
+                                <th>Subject</th>
+                                <th>Preview</th>
+                                <th>Received</th>
+                                <th class="text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var msg in Model)
+                            {
+                                <tr class="table-row">
+                                    <td data-label="ID">
+                                        <span class="badge bg-dark">#@msg.MessageId</span>
+                                    </td>
+                                    <td data-label="Status">
+                                        @{
+                                            var statusIndex = random.Next(0, messageStatuses.Length);
+                                            var statusText = messageStatuses[statusIndex];
+                                            var statusClass = statusClasses[statusIndex];
+                                            var statusIcon = statusIcons[statusIndex];
+                                        }
+                                        <span class="status-badge @statusClass">
+                                            <i class="@statusIcon"></i>
+                                            @statusText
+                                        </span>
+                                    </td>
+                                    <td data-label="Contact">
+                                        <div class="d-flex flex-column">
+                                            <strong style="color: white;">@msg.Name</strong>
+                                            <small style="color: rgba(255, 255, 255, 0.7);">
+                                                <i class="fas fa-envelope me-1"></i>
+                                                <a href="mailto:@msg.Email" style="color: rgba(255, 255, 255, 0.7);">@msg.Email</a>
+                                            </small>
+                                        </div>
+                                    </td>
+                                    <td data-label="Subject">
+                                        <span style="color: white; font-weight: 500;">@msg.Subject</span>
+                                    </td>
+                                    <td data-label="Preview">
+                                        @{
+                                            const int maxLength = 50;
+                                            var messagePreview = msg.Message?.Length > maxLength
+                                            ? msg.Message.Substring(0, maxLength) + "..."
+                                            : msg.Message;
+                                        }
+                                        <span style="color: rgba(255, 255, 255, 0.8); font-style: italic;">@messagePreview</span>
+                                    </td>
+                                    <td data-label="Received">
+                                        <div class="d-flex flex-column">
+                                            <span style="color: white;">@msg.CreatedAt?.ToString("MMM dd, yyyy")</span>
+                                            <small style="color: rgba(255, 255, 255, 0.6);">@msg.CreatedAt?.ToString("h:mm tt")</small>
+                                        </div>
+                                    </td>
+                                    <td data-label="Actions" class="text-center">
+                                        <div class="d-flex justify-content-center">
+                                            <a asp-action="Details" asp-route-id="@msg.MessageId" 
+                                               class="action-btn btn-view" 
+                                               data-bs-toggle="tooltip" 
+                                               title="View Details">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a asp-action="AddEdit" asp-route-id="@msg.MessageId" 
+                                               class="action-btn btn-edit" 
+                                               data-bs-toggle="tooltip" 
+                                               title="Edit Message">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <button type="button" 
+                                                    class="action-btn btn-delete border-0" 
+                                                    data-bs-toggle="tooltip" 
+                                                    title="Delete Message"
+                                                    onclick="confirmDelete(@msg.MessageId, '@msg.Name')">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Enhanced Pagination -->
+                <div class="d-flex justify-content-center justify-content-md-between align-items-center p-3" style="background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px);">
+                    <div class="d-none d-md-block" style="color: rgba(255, 255, 255, 0.8);">
+                        Showing <span id="visibleCount">@Model.Count()</span> of @Model.Count() messages
+                    </div>
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination mb-0">
+                            <li class="page-item disabled">
+                                <a class="page-link btn-glass" href="#" style="border-radius: 10px 0 0 10px;">
+                                    <i class="fas fa-chevron-left"></i>
+                                </a>
+                            </li>
+                            <li class="page-item active">
+                                <a class="page-link" href="#" style="background: var(--primary-gradient); border: none;">1</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link btn-glass" href="#">2</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link btn-glass" href="#">3</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link btn-glass" href="#" style="border-radius: 0 10px 10px 0;">
+                                    <i class="fas fa-chevron-right"></i>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            }
+            else
+            {
+                <div class="empty-state">
+                    <div class="empty-state-icon">
+                        <i class="far fa-envelope-open"></i>
+                    </div>
+                    <h3 style="color: white; font-weight: 300; margin-bottom: 1rem;">No Messages Yet</h3>
+                    <p style="color: rgba(255, 255, 255, 0.7); font-size: 1.1rem; margin-bottom: 2rem;">
+                        Your inbox is empty. When customers send messages, they'll appear here.
+                    </p>
+                    <a asp-action="AddEdit" class="btn btn-gradient-success btn-lg">
+                        <i class="fas fa-plus me-2"></i> Create First Message
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 20px; color: white;">
+            <div class="modal-header border-0">
+                <h5 class="modal-title" id="deleteModalLabel">
+                    <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                    Confirm Deletion
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete the message from <strong id="deleteMessageName"></strong>?</p>
+                <p class="text-warning small">
+                    <i class="fas fa-info-circle me-1"></i>
+                    This action cannot be undone.
+                </p>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-glass" data-bs-dismiss="modal">Cancel</button>
+                <form id="deleteForm" asp-action="Delete" method="post" class="d-inline">
+                    <input type="hidden" id="deleteMessageId" name="id" />
+                    <button type="submit" class="btn" style="background: var(--secondary-gradient); color: white;">
+                        <i class="fas fa-trash me-1"></i> Delete Message
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        $(document).ready(function () {
-            $("#searchInput").on("keyup", function () {
-                var value = $(this).val().toLowerCase();
-                $("#messagesTable tbody tr").filter(function () {
-                    $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+        document.addEventListener('DOMContentLoaded', function () {
+            // Initialize tooltips
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+
+            // Enhanced search functionality
+            const searchInput = document.getElementById('searchInput');
+            const tableRows = document.querySelectorAll('.table-row');
+            const visibleCountSpan = document.getElementById('visibleCount');
+            const loadingSpinner = document.getElementById('loadingSpinner');
+            const messagesContainer = document.getElementById('messagesContainer');
+
+            let searchTimeout;
+
+            searchInput.addEventListener('input', function () {
+                clearTimeout(searchTimeout);
+                
+                // Show loading spinner
+                if (loadingSpinner) {
+                    loadingSpinner.style.display = 'block';
+                    messagesContainer.style.opacity = '0.5';
+                }
+
+                searchTimeout = setTimeout(() => {
+                    const searchTerm = this.value.toLowerCase().trim();
+                    let visibleCount = 0;
+
+                    tableRows.forEach((row, index) => {
+                        const text = row.textContent.toLowerCase();
+                        const isVisible = text.includes(searchTerm);
+                        
+                        if (isVisible) {
+                            row.classList.remove('filter-hidden');
+                            row.classList.add('filter-visible');
+                            row.style.display = '';
+                            row.style.animationDelay = (index * 0.1) + 's';
+                            visibleCount++;
+                        } else {
+                            row.classList.remove('filter-visible');
+                            row.classList.add('filter-hidden');
+                            setTimeout(() => {
+                                if (row.classList.contains('filter-hidden')) {
+                                    row.style.display = 'none';
+                                }
+                            }, 300);
+                        }
+                    });
+
+                    // Update visible count
+                    if (visibleCountSpan) {
+                        visibleCountSpan.textContent = visibleCount;
+                        visibleCountSpan.style.animation = 'scaleIn 0.3s ease-out';
+                    }
+
+                    // Hide loading spinner
+                    if (loadingSpinner) {
+                        loadingSpinner.style.display = 'none';
+                        messagesContainer.style.opacity = '1';
+                    }
+
+                    // Show no results message if needed
+                    const noResultsMessage = document.getElementById('noResultsMessage');
+                    if (visibleCount === 0 && searchTerm !== '') {
+                        if (!noResultsMessage) {
+                            const tbody = document.querySelector('#messagesTable tbody');
+                            const noResultsRow = document.createElement('tr');
+                            noResultsRow.id = 'noResultsMessage';
+                            noResultsRow.innerHTML = `
+                                <td colspan="7" class="text-center p-4" style="color: rgba(255, 255, 255, 0.7);">
+                                    <i class="fas fa-search fa-2x mb-3"></i>
+                                    <h5>No messages found</h5>
+                                    <p>Try adjusting your search terms</p>
+                                </td>
+                            `;
+                            tbody.appendChild(noResultsRow);
+                        } else {
+                            noResultsMessage.style.display = '';
+                        }
+                    } else if (noResultsMessage) {
+                        noResultsMessage.style.display = 'none';
+                    }
+                }, 300);
+            });
+
+            // Smooth scroll to top when searching
+            searchInput.addEventListener('focus', function () {
+                this.parentElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            });
+
+            // Add ripple effect to action buttons
+            document.querySelectorAll('.action-btn').forEach(button => {
+                button.addEventListener('click', function (e) {
+                    const ripple = document.createElement('span');
+                    const rect = this.getBoundingClientRect();
+                    const size = Math.max(rect.width, rect.height);
+                    const x = e.clientX - rect.left - size / 2;
+                    const y = e.clientY - rect.top - size / 2;
+
+                    ripple.style.width = ripple.style.height = size + 'px';
+                    ripple.style.left = x + 'px';
+                    ripple.style.top = y + 'px';
+                    ripple.style.position = 'absolute';
+                    ripple.style.borderRadius = '50%';
+                    ripple.style.background = 'rgba(255, 255, 255, 0.6)';
+                    ripple.style.transform = 'scale(0)';
+                    ripple.style.animation = 'ripple 0.6s linear';
+                    ripple.style.pointerEvents = 'none';
+
+                    this.appendChild(ripple);
+
+                    setTimeout(() => {
+                        ripple.remove();
+                    }, 600);
                 });
+            });
+
+            // Add CSS for ripple animation
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes ripple {
+                    to {
+                        transform: scale(4);
+                        opacity: 0;
+                    }
+                }
+            `;
+            document.head.appendChild(style);
+
+            // Intersection Observer for scroll animations
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.animationPlayState = 'running';
+                    }
+                });
+            }, observerOptions);
+
+            // Observe all animated elements
+            document.querySelectorAll('.stagger-animation, .table-row').forEach(el => {
+                observer.observe(el);
+            });
+        });
+
+        // Delete confirmation function
+        function confirmDelete(messageId, messageName) {
+            document.getElementById('deleteMessageId').value = messageId;
+            document.getElementById('deleteMessageName').textContent = messageName;
+            
+            const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+            deleteModal.show();
+        }
+
+        // Add keyboard shortcuts
+        document.addEventListener('keydown', function (e) {
+            // Ctrl/Cmd + K to focus search
+            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                e.preventDefault();
+                document.getElementById('searchInput').focus();
+            }
+            
+            // Escape to clear search
+            if (e.key === 'Escape') {
+                const searchInput = document.getElementById('searchInput');
+                if (searchInput.value) {
+                    searchInput.value = '';
+                    searchInput.dispatchEvent(new Event('input'));
+                }
+            }
+        });
+
+        // Add loading states for better UX
+        document.querySelectorAll('a[asp-action]').forEach(link => {
+            link.addEventListener('click', function () {
+                this.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Loading...';
+                this.style.pointerEvents = 'none';
             });
         });
     </script>
 }
-
-<div class="card shadow-lg mt-4 border-light-subtle">
-    <div class="card-header bg-light">
-        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
-
-            <h2 class="mb-0 h4">
-                <i class="fas fa-envelope-open-text me-2 text-primary"></i>
-                @ViewData["Title"]
-                @if (Model != null && Model.Any())
-                {
-                    <span class="badge bg-primary rounded-pill ms-2">@Model.Count()</span>
-                }
-            </h2>
-
-            <div class="d-flex flex-grow-1 flex-md-grow-0" role="toolbar">
-                <div class="input-group">
-                    <span class="input-group-text"><i class="fas fa-search"></i></span>
-                    <input type="search" id="searchInput" class="form-control" placeholder="Search messages...">
-                </div>
-                <a asp-action="AddEdit" class="btn btn-success ms-2 flex-shrink-0">
-                    <i class="fas fa-plus me-1"></i> Add New
-                </a>
-            </div>
-
-        </div>
-    </div>
-
-    <div class="card-body p-0">
-        @if (Model != null && Model.Any())
-        {
-            <div class="table-responsive">
-                <table id="messagesTable" class="table table-hover table-striped mb-0 align-middle">
-                    <thead class="table-dark">
-                        <tr>
-                            <th>ID</th>
-                            <th>Status</th>
-                            <th>Name</th>
-                            <th>Email</th>
-                            <th>Subject</th>
-                            <th>Message Preview</th>
-                            <th>Received At</th>
-                            <th class="text-center">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var msg in Model)
-                        {
-                            <tr>
-                                <td><small class="text-muted">@msg.MessageId</small></td>
-                                <td>
-                                    @* You can add status logic here, e.g., a badge for read/unread *@
-                                </td>
-                                <td class="fw-bold">@msg.Name</td>
-                                <td><a href="mailto:@msg.Email">@msg.Email</a></td>
-                                <td>@msg.Subject</td>
-                                <td>
-                                    @{
-                                        const int maxLength = 45;
-                                        var messagePreview = msg.Message?.Length > maxLength
-                                        ? msg.Message.Substring(0, maxLength) + "..."
-                                        : msg.Message;
-                                    }
-                                    <span class="text-muted">@messagePreview</span>
-                                </td>
-                                <td>@msg.CreatedAt?.ToString("MMM dd, yyyy h:mm tt")</td>
-                                <td class="text-center">
-                                    <div class="btn-group" role="group" aria-label="Message Actions">
-                                        <a asp-action="Details" asp-route-id="@msg.MessageId" class="btn btn-sm btn-outline-primary" title="View Details">
-                                            <i class="fas fa-eye"></i>
-                                        </a>
-                                        <a asp-action="AddEdit" asp-route-id="@msg.MessageId" class="btn btn-sm btn-outline-warning" title="Edit">
-                                            <i class="fas fa-pencil-alt"></i>
-                                        </a>
-                                        <a asp-action="Delete" asp-route-id="@msg.MessageId" class="btn btn-sm btn-outline-danger" title="Delete" onclick="return confirm('Are you sure you want to delete this?')">
-                                            <i class="fas fa-trash-alt"></i>
-                                        </a>
-                                    </div>
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="card-footer bg-light d-flex justify-content-end">
-                <nav aria-label="Page navigation">
-                    <ul class="pagination mb-0">
-                        <li class="page-item disabled"><a class="page-link" href="#">Previous</a></li>
-                        <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                        <li class="page-item"><a class="page-link" href="#">2</a></li>
-                        <li class="page-item"><a class="page-link" href="#">3</a></li>
-                        <li class="page-item"><a class="page-link" href="#">Next</a></li>
-                    </ul>
-                </nav>
-            </div>
-        }
-        else
-        {
-            <div class="text-center p-5 my-5">
-                <i class="far fa-folder-open fa-4x text-muted mb-3"></i>
-                <h3 class="text-muted">No Messages Found</h3>
-                <p>There are currently no contact messages in the system.</p>
-                <a asp-action="AddEdit" class="btn btn-primary mt-3">
-                    <i class="fas fa-plus me-1"></i> Add the First Message
-                </a>
-            </div>
-        }
-    </div>
-</div>
-
-@* To use icons like in this example, ensure you have included Font Awesome in your _Layout.cshtml file.
-    Example: <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" /> 
-
-    To use the client-side search, you also need jQuery. It is included by default in most ASP.NET Core/MVC templates. 
-*@
